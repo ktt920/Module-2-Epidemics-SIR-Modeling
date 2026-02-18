@@ -28,6 +28,7 @@ def escitalopram(x):  # weaker efficacy, low toxicity
     toxicity = 0.1 * x**2 / 120
     return efficacy - escitalopram_lambda * toxicity
 
+
 #%% plot drug efficacies
 x = np.linspace(0, 15, 100)
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -84,7 +85,7 @@ def second_derivative(f, x, h=1e-4):
     """Central difference approximation for f''(x)."""
     return (f(x + h) - 2*f(x) + f(x - h)) / (h**2)
 
-def newtons_method(f, x0, tol=1e-6, max_iter=10):
+def newtons_method(f, x0, tol=1e-6, max_iter=1000):
     x = x0
     for i in range(max_iter):
         grad = gradient(f, x)
@@ -117,3 +118,26 @@ print(f"Newton's Method - Optimal Lisinopril Effect: {opt_effect_lisinopril_nm*1
 opt_dose_escitalopram_nm, opt_effect_escitalopram_nm = newtons_method(escitalopram, x0=1.0)
 print(f"Newton's Method - Optimal Escitalopram Dose: {opt_dose_escitalopram_nm:.2f} mg")
 print(f"Newton's Method - Optimal Escitalopram Effect: {opt_effect_escitalopram_nm*100:.2f}%")
+
+# %% 3. Determining Best Lambda Value for Optimal Dosage
+currentLambda = 0 
+optimalLambda = 0
+lambdaIncreaseStep = 0.1 # How much of a increment do you want to test different lambda value.
+optimalData = 0
+for i in range(11):
+    #Getting Optimal Dosage for current Lambda
+    metformin_lambda = currentLambda 
+    opt_dose_metformin_nm_current, opt_effect_metformin_nm_current = steepest_ascent(metformin, x0=1.0)
+
+    #Comparing the new calculated optimal dosage for current lambda with Optimal Data.
+    #If current lambda is better, optimal data will be based on the calculation from current data and the optimalLambda will be updated.
+    if (opt_effect_metformin_nm_current > optimalData ):
+        optimalData = opt_effect_metformin_nm_current
+        optimalLambda = currentLambda
+    
+    #Increasing currentLambda to test the next increment
+    currentLambda += lambdaIncreaseStep
+
+print(f"Optimal LambdaValue for Metformin : {optimalLambda}")
+
+# %%
