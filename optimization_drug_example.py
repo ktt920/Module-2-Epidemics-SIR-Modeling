@@ -35,6 +35,8 @@ fig, ax = plt.subplots(figsize=(10, 6))
 plt.plot(x, metformin(x), label='Metformin', color='blue')
 plt.plot(x, lisinopril(x), label='Lisinopril', color='orange')
 plt.plot(x, escitalopram(x), label='Escitalopram', color='green')
+# 1. Plot function of combined effect of all three drugs
+plt.plot(x, metformin(x)+lisinopril(x)+escitalopram(x), label='Combined', color='yellow', linestyle='--')
 plt.title('Drug Efficacy vs Dosage')
 plt.xlabel('Dosage (mg)')
 plt.ylabel('Net Effect')
@@ -78,6 +80,16 @@ opt_dose_escitalopram, opt_effect_escitalopram = steepest_ascent(escitalopram, x
 print(f"Steepest Ascent Method - Optimal Escitalopram Dose: {opt_dose_escitalopram:.2f} mg")
 print(f"Steepest Ascent Method - Optimal Escitalopram Effect: {opt_effect_escitalopram*100:.2f}%")
 
+#2a. Applying Steepest Ascent to this combined function
+# Combined
+
+def combined(x):
+    return metformin(x) + lisinopril(x) + escitalopram(x)
+
+opt_dose_combined, opt_effect_combined = steepest_ascent(combined, x0=1.0)
+print(f"Steepest Ascent Method - Optimal Combined Dose: {opt_dose_combined:.2f} mg")
+print(f"Steepest Ascent Method - Optimal Combined Effect: {opt_effect_combined*100:.2f}%")
+
 # %% Newton's method
 
 # requires second derivative
@@ -119,19 +131,28 @@ opt_dose_escitalopram_nm, opt_effect_escitalopram_nm = newtons_method(escitalopr
 print(f"Newton's Method - Optimal Escitalopram Dose: {opt_dose_escitalopram_nm:.2f} mg")
 print(f"Newton's Method - Optimal Escitalopram Effect: {opt_effect_escitalopram_nm*100:.2f}%")
 
+#2b. Applying Newton's Method to this combined function
+# Combined
+opt_dose_combined_nm, opt_effect_combined_nm = newtons_method(combined, x0=1.0)
+print(f"Newton's Method - Optimal Combined Dose: {opt_dose_combined_nm:.2f} mg")
+print(f"Newton's Method - Optimal Combined Effect: {opt_effect_combined_nm*100:.2f}%")
+
+
 # %% 3. Determining Best Lambda Value for Optimal Dosage
+optimalEffect = opt_effect_combined #This is obtained from earlier calculation of Optimal Combined Effect with Steepest Ascent
+
 currentLambda = 0 
 optimalLambda = 0
 lambdaIncreaseStep = 0.1 # How much of a increment do you want to test different lambda value.
 optimalData = 0
+
 for i in range(11):
     #Getting Optimal Dosage for current Lambda
     metformin_lambda = currentLambda 
     opt_dose_metformin_nm_current, opt_effect_metformin_nm_current = steepest_ascent(metformin, x0=1.0)
 
-    #Comparing the new calculated optimal dosage for current lambda with Optimal Data.
-    #If current lambda is better, optimal data will be based on the calculation from current data and the optimalLambda will be updated.
-    if (opt_effect_metformin_nm_current > optimalData ):
+    #Logic : Smaller differences between metformin calculated effect and optimalEffect means closest to optimalEffect
+    if ((opt_effect_metformin_nm_current - optimalEffect) < (optimalData-optimalEffect) ):
         optimalData = opt_effect_metformin_nm_current
         optimalLambda = currentLambda
     
